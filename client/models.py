@@ -1,56 +1,80 @@
 from django.db import models
+from datetime import datetime
+import uuid
+
+def custom_id():
+    uuid_string = str(uuid.uuid4()).split("-")[0]
+    custom_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid_string[:4]}"
+    return custom_id
 
 class ClientUser(models.Model):
-    username = models.CharField(max_length=255)
-    firstname = models.CharField(max_length=255)
-    lastname = models.CharField(max_length=255)
+    id_custom = models.CharField(
+        max_length=8,
+        primary_key=True,
+        default=custom_id)
+    username = models.CharField(
+        max_length=255
+        )
+    date_joined = models.DateTimeField(
+        auto_now_add=True,
+        null=True
+        )
+    
     def __str__(self):
-        return f"{self.username}, {self.firstname}, {self.lastname}"
-
-class ClientRegistration(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    accountdate = models.DateTimeField(auto_now_add=True, null=True)
-    def __str__(self):
-        return f"{self.accountdate}"
+        return f"{self.id_custom}, {self.username}, {self.date_joined}"
 
 class ClientPassword(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    password = models.CharField(max_length=255, null=True)
-    passwordlevel = models.CharField(max_length=255, null=True)
-    passwordchangedate = models.DateTimeField(auto_now_add=True, null=True)
+    client = models.ForeignKey(
+        ClientUser,
+        on_delete=models.CASCADE
+        )
+    password = models.CharField(
+        max_length=255,
+        null=True
+        )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True
+        )
+
     def __str__(self):
-        return f"{self.password}, {self.passwordlevel}, {self.passwordchangedate}"
+        return f"{self.client}, {self.password}, {self.pub_date}"
 
 class ClientSetting(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    mode = models.CharField(max_length=255)
+    client = models.OneToOneField(
+        ClientUser,
+        on_delete=models.CASCADE,
+        primary_key=True)
+    mode = models.IntegerField(
+        blank=True)
+
     def __str__(self):
-        return f"{self.mode}"
+        return f"{self.client}, {self.mode}"
 
 class ClientLast(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    devicelogin = models.CharField(max_length=255)
-    lastlogin = models.DateTimeField(auto_now_add=True, null=True)
-    def __str__(self):
-        return f"{self.devicelogin}, {self.lastlogin}"
+    client = models.ForeignKey(
+        ClientUser,
+        on_delete=models.CASCADE
+        )
+    language = models.CharField(
+        max_length=255,
+        blank=True
+        )
+    platform = models.CharField(
+        max_length=255,
+        blank=True
+        )
+    agent = models.CharField(
+        max_length=255,
+        blank=True
+        )
+    ip = models.CharField(
+        max_length=255,
+        blank=True
+        )
+    last_login = models.DateTimeField(
+        auto_now_add=True,
+        null=True)
 
-class ClientExperience(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)    
-    experience = models.CharField(max_length=255)
-    experiencelevel = models.CharField(max_length=255)
     def __str__(self):
-        return f"{self.experience}, {self.experiencelevel}"
-
-class ClientVerification(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    verification = models.CharField(max_length=255)
-    verificationdate = models.DateTimeField(auto_now_add=True, null=True)
-    def __str__(self):
-        return f"{self.verification}, {self.verificationdate}"
-
-class ClientMembership(models.Model):
-    clientid = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
-    membership = models.CharField(max_length=255)
-    membershipdate = models.DateTimeField(auto_now_add=True, null=True)
-    def __str__(self):
-        return f"{self.membership}, {self.membershipdate}"
+        return f"{self.client}, {self.language}, {self.platform}, {self.agent}, {self.ip}, {self.last_login}"
